@@ -119,9 +119,9 @@ const Index = () => {
           </div>
         ) : activeTab === "prediction" ? (
           <IrrigationPrediction />
-        ) : (
+        ) : activeTab === "library" ? (
           <PlantLibrary />
-        )}
+        ) : null}
       </main>
 
       {/* ChatBot */}
