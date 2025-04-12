@@ -6,9 +6,11 @@ import { Link } from "react-router-dom";
 import IrrigationPrediction from "@/components/IrrigationPrediction";
 import PlantLibrary from "@/components/PlantLibrary";
 import ChatBot from "@/components/ChatBot";
+import VisualGrowthTracker from "@/components/VisualGrowthTracker";
+import IrrigationDNA from "@/components/IrrigationDNA";
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<"home" | "prediction" | "library">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "prediction" | "library" | "growth" | "dna">("home");
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-blue-50">
@@ -39,6 +41,24 @@ const Index = () => {
               <NavigationMenuItem>
                 <Button 
                   variant="ghost"
+                  onClick={() => setActiveTab("growth")}
+                  className={activeTab === "growth" ? "bg-green-100" : ""}
+                >
+                  Growth Tracker
+                </Button>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Button 
+                  variant="ghost"
+                  onClick={() => setActiveTab("dna")}
+                  className={activeTab === "dna" ? "bg-green-100" : ""}
+                >
+                  Irrigation DNA
+                </Button>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Button 
+                  variant="ghost"
                   onClick={() => setActiveTab("library")}
                   className={activeTab === "library" ? "bg-green-100" : ""}
                 >
@@ -61,18 +81,17 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold text-green-600 mb-3">Smart Irrigation Prediction</h3>
                 <p className="text-gray-600 mb-4">
                   Our advanced machine learning model analyzes your garden's conditions to provide precise irrigation 
-                  recommendations. Enter details about your plants, soil, and environmental conditions to get:
+                  recommendations with real-time weather integration.
                 </p>
                 <ul className="list-disc list-inside text-gray-600 space-y-1 mb-4">
-                  <li>Predicted water requirements</li>
-                  <li>Evaporation rate estimates</li>
-                  <li>Recommended irrigation methods</li>
-                  <li>Future soil moisture forecasts</li>
+                  <li>Weather-adjusted recommendations</li>
+                  <li>Rain forecast integration</li>
+                  <li>Heatwave & cold snap adjustments</li>
                 </ul>
                 <Button onClick={() => setActiveTab("prediction")} className="bg-green-600 hover:bg-green-700">
                   Try Irrigation Prediction
@@ -80,18 +99,34 @@ const Index = () => {
               </div>
               
               <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-green-600 mb-3">Plant Irrigation Library</h3>
+                <h3 className="text-xl font-semibold text-green-600 mb-3">Visual Growth Tracker</h3>
                 <p className="text-gray-600 mb-4">
-                  Access our comprehensive database of plant species with detailed information about:
+                  Monitor your plants' development with our visual growth tracking tools:
                 </p>
                 <ul className="list-disc list-inside text-gray-600 space-y-1 mb-4">
-                  <li>Typical water requirements</li>
-                  <li>Ideal irrigation methods</li>
-                  <li>Optimal growing conditions</li>
-                  <li>Seasonal watering adjustments</li>
+                  <li>Height and leaf count tracking</li>
+                  <li>Health score monitoring</li>
+                  <li>Growth trend visualization</li>
+                  <li>Seasonal progress tracking</li>
                 </ul>
-                <Button onClick={() => setActiveTab("library")} className="bg-green-600 hover:bg-green-700">
-                  Explore Plant Library
+                <Button onClick={() => setActiveTab("growth")} className="bg-green-600 hover:bg-green-700">
+                  Track Plant Growth
+                </Button>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-green-600 mb-3">Irrigation DNA</h3>
+                <p className="text-gray-600 mb-4">
+                  Discover your plants' unique watering needs with customized profiles:
+                </p>
+                <ul className="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                  <li>Detailed watering patterns</li>
+                  <li>Soil and container recommendations</li>
+                  <li>Seasonal adjustment schedules</li>
+                  <li>Weather sensitivity analysis</li>
+                </ul>
+                <Button onClick={() => setActiveTab("dna")} className="bg-green-600 hover:bg-green-700">
+                  View Irrigation DNA
                 </Button>
               </div>
             </div>
@@ -119,6 +154,10 @@ const Index = () => {
           </div>
         ) : activeTab === "prediction" ? (
           <IrrigationPrediction />
+        ) : activeTab === "growth" ? (
+          <VisualGrowthTracker />
+        ) : activeTab === "dna" ? (
+          <IrrigationDNA />
         ) : activeTab === "library" ? (
           <PlantLibrary />
         ) : null}
