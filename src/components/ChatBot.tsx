@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, MessageCircle, Send } from "lucide-react";
+import { X, MessageCircle, Send, Upload, LineChart, Plant } from "lucide-react";
 
 // Mock Q&A database for the chatbot
 const QA_DATABASE = {
@@ -23,17 +22,31 @@ const QA_DATABASE = {
   
   "drought resistant plants?": "Good drought-resistant plants include lavender, rosemary, sage, succulents, cacti, yarrow, Russian sage, and ornamental grasses like blue fescue and feather reed grass.",
   
-  "how does soil type affect irrigation?": "Sandy soils drain quickly and need frequent, light watering. Clay soils hold water longer but need slow, infrequent watering to avoid waterlogging. Loamy soils have balanced drainage and are ideal for most plants."
+  "how does soil type affect irrigation?": "Sandy soils drain quickly and need frequent, light watering. Clay soils hold water longer but need slow, infrequent watering to avoid waterlogging. Loamy soils have balanced drainage and are ideal for most plants.",
+  
+  "how to track plant growth?": "You can use our Visual Growth Tracker feature to upload photos of your plants over time. Our AI will analyze the images and track your plant's growth progress, providing visual reports and insights.",
+  
+  "what is growth tracking?": "Growth tracking is a feature that lets you monitor your plant's development over time. Upload photos regularly, and our system will calculate growth percentages, health scores, and provide visual charts of your plant's progress.",
+  
+  "how often should I take plant photos?": "For optimal growth tracking, we recommend taking photos once a week for fast-growing plants like herbs and vegetables, and once every 2-4 weeks for slower growing plants like succulents and indoor plants.",
+  
+  "what metrics does growth tracking measure?": "Our Visual Growth Tracker measures height changes, leaf count, overall plant volume, color vibrancy, and calculates a health score based on these factors combined with seasonal expectations.",
+  
+  "how do I use growth tracker?": "To use the Visual Growth Tracker, navigate to the Growth Tracker tab, select your plant type, upload a clear photo of your plant, and add a measurement reference if possible. Continue adding photos over time to see your plant's growth journey.",
+  
+  "can I see growth stats?": "Yes! The Visual Growth Tracker provides growth percentage over time, health score trends, and comparative analysis with typical growth rates for your specific plant type. You'll receive encouraging updates like 'Your Basil grew 20% in 30 days!'",
+  
+  "what if my plant isn't growing?": "If your plant shows minimal growth, our system will analyze possible causes based on your inputs about watering, sunlight, and season. We'll provide targeted recommendations to help improve your plant's growth rate."
 };
 
-// Quick question suggestions
+// Add new growth tracking questions to quick suggestions
 const QUICK_QUESTIONS = [
   "What's the best irrigation method for roses?",
   "How much water do tomatoes need?",
   "Is irrigation needed if humidity is high?",
   "How to reduce evaporation loss?",
-  "How often should I water succulents?",
-  "Best time to water plants?"
+  "How to track plant growth?",
+  "Can I see growth stats?"
 ];
 
 interface Message {
@@ -44,7 +57,7 @@ interface Message {
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { text: "Hello! I'm your garden irrigation assistant. How can I help you today?", isUser: false }
+    { text: "Hello! I'm your garden irrigation and growth tracking assistant. How can I help you today?", isUser: false }
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
@@ -57,7 +70,7 @@ const ChatBot = () => {
     
     // Find answer in database
     const lowerCaseInput = inputMessage.toLowerCase();
-    let botResponse = "I don't have specific information on that. Perhaps try another gardening question about irrigation needs or methods?";
+    let botResponse = "I don't have specific information on that. Perhaps try asking about irrigation needs, methods, or plant growth tracking?";
     
     // Check for matching questions in our database
     for (const [question, answer] of Object.entries(QA_DATABASE)) {
@@ -68,6 +81,23 @@ const ChatBot = () => {
         botResponse = answer;
         break;
       }
+    }
+    
+    // Add special responses for growth tracking keywords
+    if (
+      lowerCaseInput.includes("upload photo") || 
+      lowerCaseInput.includes("take picture") ||
+      lowerCaseInput.includes("add image")
+    ) {
+      botResponse = "To upload plant photos for growth tracking, please go to the Growth Tracker tab and use the upload feature there. Our AI will analyze your plant's growth over time as you add more photos.";
+    }
+    
+    if (
+      lowerCaseInput.includes("progress") || 
+      lowerCaseInput.includes("grew") ||
+      lowerCaseInput.includes("growing")
+    ) {
+      botResponse = "The Visual Growth Tracker feature will show your plant's progress over time with visual charts and statistics. You'll receive encouraging updates like 'Your Basil grew 20% in 30 days!'";
     }
     
     // Add bot response with a small delay
@@ -127,6 +157,37 @@ const ChatBot = () => {
                     {message.text}
                   </div>
                 ))}
+              </div>
+              
+              {/* Feature icons */}
+              <div className="px-3 pt-2 pb-1 border-t flex justify-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex flex-col items-center text-xs text-green-700 hover:bg-green-50"
+                  onClick={() => handleQuickQuestion("How to track plant growth?")}
+                >
+                  <Upload className="h-4 w-4 mb-1" />
+                  <span>Upload</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex flex-col items-center text-xs text-green-700 hover:bg-green-50"
+                  onClick={() => handleQuickQuestion("Can I see growth stats?")}
+                >
+                  <LineChart className="h-4 w-4 mb-1" />
+                  <span>Stats</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex flex-col items-center text-xs text-green-700 hover:bg-green-50"
+                  onClick={() => handleQuickQuestion("What metrics does growth tracking measure?")}
+                >
+                  <Plant className="h-4 w-4 mb-1" />
+                  <span>Metrics</span>
+                </Button>
               </div>
               
               {/* Quick questions */}
