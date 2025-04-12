@@ -1,13 +1,16 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { PLANT_NAMES } from "@/data/plantDatabase";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
-import { Leaf, ArrowUp, ArrowDown } from "lucide-react";
+import { Leaf, ArrowUp, ArrowDown, Upload, Camera, UploadCloud, CalendarDays, TrendingUp } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface GrowthData {
   id: number;
@@ -15,6 +18,13 @@ interface GrowthData {
   height: number;
   leaves: number;
   health: number;
+}
+
+interface ImageData {
+  id: number;
+  date: string;
+  url: string;
+  healthScore: number;
 }
 
 const generateMockGrowthData = (plantName: string, days: number = 30): GrowthData[] => {
@@ -51,11 +61,82 @@ const generateMockGrowthData = (plantName: string, days: number = 30): GrowthDat
   return data;
 };
 
+// Generate example image data
+const generateMockImageData = (plantName: string, growthData: GrowthData[]): ImageData[] => {
+  // Generate sparse image history (not for every day)
+  const images: ImageData[] = [];
+  
+  // Add 4-6 photos distributed over the time period
+  const photoCount = 4 + Math.floor(Math.random() * 3);
+  const dataLength = growthData.length;
+  
+  for (let i = 0; i < photoCount; i++) {
+    // Distribute evenly across the time period
+    const index = Math.floor((i * (dataLength-1)) / (photoCount-1));
+    const entry = growthData[index];
+    
+    images.push({
+      id: i,
+      date: entry.date,
+      url: `https://source.unsplash.com/300x300/?${plantName.toLowerCase()},plant,growth&random=${i}`,
+      healthScore: entry.health
+    });
+  }
+  
+  return images;
+};
+
+// Helper function to format dates
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+// Simulates an AI analysis of the plant growth
+const simulateAIAnalysis = (plantName: string, growthData: GrowthData[], imageData: ImageData[]) => {
+  if (growthData.length < 2 || imageData.length < 2) return null;
+  
+  const firstEntry = growthData[0];
+  const lastEntry = growthData[growthData.length - 1];
+  const heightGrowth = ((lastEntry.height - firstEntry.height) / firstEntry.height) * 100;
+  const leafGrowth = lastEntry.leaves - firstEntry.leaves;
+  
+  // Simulate health assessment
+  let healthStatus = "healthy";
+  const recentHealth = lastEntry.health;
+  if (recentHealth < 70) healthStatus = "struggling";
+  else if (recentHealth < 85) healthStatus = "good";
+  
+  // Simulate care recommendations
+  const recommendations = [];
+  if (recentHealth < 80) {
+    recommendations.push("Consider increasing watering frequency");
+  }
+  if (heightGrowth < 10) {
+    recommendations.push("Check light conditions for optimal growth");
+  }
+  if (leafGrowth < 3) {
+    recommendations.push("Add balanced fertilizer to promote leaf growth");
+  }
+  
+  return {
+    growthPercentage: Math.round(heightGrowth),
+    leafGrowth,
+    healthStatus,
+    recommendations,
+    timePeriod: `${formatDate(firstEntry.date)} - ${formatDate(lastEntry.date)}`,
+  };
+};
+
 const VisualGrowthTracker = () => {
   const [selectedPlantType, setSelectedPlantType] = useState<string>("Ornamental");
   const [selectedPlantName, setSelectedPlantName] = useState<string>("Rose");
   const [growthData, setGrowthData] = useState<GrowthData[]>([]);
   const [availablePlants, setAvailablePlants] = useState<string[]>(PLANT_NAMES["Ornamental"] || []);
+  const [imageData, setImageData] = useState<ImageData[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   useEffect(() => {
     // When plant type changes, update available plants and select the first one
@@ -67,7 +148,17 @@ const VisualGrowthTracker = () => {
   
   useEffect(() => {
     // Generate new data when plant name changes
-    setGrowthData(generateMockGrowthData(selectedPlantName));
+    const newGrowthData = generateMockGrowthData(selectedPlantName);
+    setGrowthData(newGrowthData);
+    
+    // Generate image data
+    const newImageData = generateMockImageData(selectedPlantName, newGrowthData);
+    setImageData(newImageData);
+    
+    // Run AI analysis
+    setTimeout(() => {
+      setAnalysisResult(simulateAIAnalysis(selectedPlantName, newGrowthData, newImageData));
+    }, 500);
   }, [selectedPlantName]);
   
   // Calculate growth metrics
@@ -87,6 +178,60 @@ const VisualGrowthTracker = () => {
            currentHeight < weekAgoHeight * 0.98 ? 'down' : 'neutral';
   };
   
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // In a real app, we'd upload the file to a server
+    // Here we'll simulate a successful upload
+    toast({
+      title: "Photo uploaded successfully!",
+      description: "Your plant photo is being analyzed for growth tracking.",
+    });
+    
+    // Clear the input for future uploads
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
+    // Simulate adding a new entry with the current date
+    const today = new Date().toISOString().split('T')[0];
+    const newId = imageData.length > 0 ? Math.max(...imageData.map(img => img.id)) + 1 : 0;
+    
+    // Generate a health score based on previous trend
+    const newHealthScore = growthData.length > 0 
+      ? growthData[growthData.length - 1].health + (Math.random() * 10 - 5)
+      : 85 + (Math.random() * 10 - 5);
+      
+    const newImage: ImageData = {
+      id: newId,
+      date: today,
+      url: `https://source.unsplash.com/300x300/?${selectedPlantName.toLowerCase()},plant,growth&random=${newId}`,
+      healthScore: Math.min(100, Math.max(0, newHealthScore))
+    };
+    
+    // In a real app, we'd get this data from the server after analysis
+    const updatedImageData = [...imageData, newImage];
+    setImageData(updatedImageData);
+    
+    // Wait for "analysis" to complete
+    setTimeout(() => {
+      toast({
+        title: "Analysis complete!",
+        description: `Your ${selectedPlantName} looks ${newHealthScore > 80 ? 'healthy!' : 'like it needs attention.'}`,
+      });
+      
+      // Update analysis results
+      setAnalysisResult(simulateAIAnalysis(selectedPlantName, growthData, updatedImageData));
+    }, 2000);
+  };
+  
   const growthPercentage = calculateGrowthPercentage();
   const trend = recentGrowthTrend();
   const latestHeight = growthData.length ? growthData[growthData.length - 1].height.toFixed(1) : '0';
@@ -97,7 +242,7 @@ const VisualGrowthTracker = () => {
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle>Visual Growth Tracker</CardTitle>
-        <CardDescription>Monitor your plant's growth and health over time</CardDescription>
+        <CardDescription>Monitor your plant's growth and health over time with AI-powered analysis</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -136,12 +281,84 @@ const VisualGrowthTracker = () => {
           </div>
         </div>
         
-        <div className="rounded-lg overflow-hidden border">
-          <img 
-            src={`https://source.unsplash.com/300x200/?${selectedPlantName.toLowerCase()},plant`} 
-            alt={selectedPlantName}
-            className="w-full h-48 object-cover"
-          />
+        {/* AI Analysis Summary */}
+        {analysisResult && (
+          <div className="bg-green-50 p-4 rounded-lg border border-green-100 animate-in fade-in">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <h3 className="text-lg font-medium text-green-800">Growth Summary</h3>
+            </div>
+            <p className="text-green-700 font-medium mb-2">
+              Your {selectedPlantName.toLowerCase()} has grown {analysisResult.growthPercentage}% over the past 30 days!
+            </p>
+            <p className="text-green-600 text-sm mb-1">
+              {analysisResult.leafGrowth > 0 ? `Added ${analysisResult.leafGrowth} new leaves` : "Leaf count stable"}
+            </p>
+            <p className="text-green-600 text-sm mb-3">
+              Overall health: <span className="font-medium">{analysisResult.healthStatus}</span>
+            </p>
+            
+            {analysisResult.recommendations.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm font-medium text-amber-700">Recommendations:</p>
+                <ul className="text-sm text-amber-700 list-disc list-inside">
+                  {analysisResult.recommendations.map((rec: string, i: number) => (
+                    <li key={i}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Photo Gallery */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Growth Photo Gallery</h3>
+            <div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <Button onClick={handleUploadClick} size="sm" className="flex items-center gap-1">
+                <UploadCloud className="h-4 w-4" />
+                <span>Upload New Photo</span>
+              </Button>
+            </div>
+          </div>
+          
+          {imageData.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {imageData.map((image) => (
+                <div key={image.id} className="space-y-1">
+                  <div className="relative aspect-square rounded-md overflow-hidden border border-gray-200">
+                    <img 
+                      src={image.url} 
+                      alt={`${selectedPlantName} on ${formatDate(image.date)}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                      {formatDate(image.date)}
+                    </div>
+                    <div className={`absolute top-2 right-2 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold ${
+                      image.healthScore > 85 ? 'bg-green-500' : 
+                      image.healthScore > 70 ? 'bg-yellow-500' : 'bg-red-500'
+                    } text-white`}>
+                      {Math.round(image.healthScore)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 border border-dashed rounded-lg">
+              <Camera className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+              <p className="text-gray-500">No photos yet. Upload your first plant photo!</p>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -211,6 +428,12 @@ const VisualGrowthTracker = () => {
           </ChartContainer>
         </div>
       </CardContent>
+      <CardFooter className="border-t pt-6">
+        <div className="text-sm text-gray-500 flex items-center gap-1">
+          <CalendarDays className="h-4 w-4" />
+          <span>Tracking started {growthData.length > 0 ? formatDate(growthData[0].date) : 'today'}</span>
+        </div>
+      </CardFooter>
     </Card>
   );
 };
