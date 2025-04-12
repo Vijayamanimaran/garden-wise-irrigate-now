@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { Cloud, CloudRain, Umbrella, Thermometer, AlertTriangle } from "lucide-react";
 
 const PLANT_TYPES = [
   "Ornamental", "Shrubs", "Trees", "Herbs", "Climbers", 
@@ -54,6 +55,7 @@ interface FormData {
   rainfall: number;
   sunlightHours: number;
   daysSinceIrrigation: number;
+  location: string;
 }
 
 interface PredictionResult {
@@ -62,6 +64,36 @@ interface PredictionResult {
   irrigationType: string;
   futureSoilMoisture: number;
   irrigationNeeded: boolean;
+  weatherAdjustment: string | null;
+  forecastRain: boolean;
+  extremeWeather: "none" | "heatwave" | "cold";
+}
+
+interface WeatherData {
+  current: {
+    temp_c: number;
+    humidity: number;
+    condition: {
+      text: string;
+      code: number;
+    };
+  };
+  forecast: {
+    forecastday: Array<{
+      day: {
+        daily_chance_of_rain: number;
+        avgtemp_c: number;
+        condition: {
+          text: string;
+          code: number;
+        }
+      };
+    }>;
+  };
+  location: {
+    name: string;
+    region: string;
+  };
 }
 
 const IrrigationPrediction = () => {
@@ -73,12 +105,15 @@ const IrrigationPrediction = () => {
     humidity: 60,
     rainfall: 5,
     sunlightHours: 6,
-    daysSinceIrrigation: 2
+    daysSinceIrrigation: 2,
+    location: "London"
   });
 
   const [availablePlants, setAvailablePlants] = useState<string[]>(PLANT_NAMES["Ornamental"]);
   const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
 
   const handlePlantTypeChange = (value: string) => {
     setFormData(prev => ({
@@ -93,8 +128,83 @@ const IrrigationPrediction = () => {
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
       setFormData(prev => ({ ...prev, [field]: numValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
     }
   };
+
+  const fetchWeatherData = async () => {
+    if (!formData.location) return;
+    
+    setIsLoadingWeather(true);
+    
+    try {
+      // In a real implementation, you would use an actual weather API
+      // This is a mock implementation that simulates API call timing
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate mock weather data based on the location string
+      // (in a real implementation, this would be from the API)
+      const mockWeatherData: WeatherData = {
+        current: {
+          temp_c: Math.round(15 + Math.random() * 20), // 15-35°C
+          humidity: Math.round(40 + Math.random() * 40), // 40-80%
+          condition: {
+            text: Math.random() > 0.7 ? "Rainy" : "Sunny",
+            code: Math.random() > 0.7 ? 1063 : 1000
+          }
+        },
+        forecast: {
+          forecastday: Array(3).fill(null).map(() => ({
+            day: {
+              daily_chance_of_rain: Math.round(Math.random() * 100),
+              avgtemp_c: Math.round(15 + Math.random() * 20),
+              condition: {
+                text: Math.random() > 0.7 ? "Rainy" : "Partly cloudy",
+                code: Math.random() > 0.7 ? 1063 : 1003
+              }
+            }
+          }))
+        },
+        location: {
+          name: formData.location,
+          region: "Region"
+        }
+      };
+      
+      setWeatherData(mockWeatherData);
+      
+      // Update temperature and humidity from weather
+      setFormData(prev => ({
+        ...prev,
+        temperature: mockWeatherData.current.temp_c,
+        humidity: mockWeatherData.current.humidity
+      }));
+      
+      toast({
+        title: "Weather data updated",
+        description: `Current conditions for ${mockWeatherData.location.name}: ${mockWeatherData.current.condition.text}, ${mockWeatherData.current.temp_c}°C`
+      });
+      
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      toast({
+        title: "Error fetching weather data",
+        description: "Could not retrieve weather information. Using manual inputs.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingWeather(false);
+    }
+  };
+
+  useEffect(() => {
+    if (formData.location) {
+      fetchWeatherData();
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +218,37 @@ const IrrigationPrediction = () => {
       const multiplier = formData.temperature / 20 + formData.sunlightHours / 6;
       const soilDryness = (100 - formData.soilMoisture) / 100;
       
-      const waterRequirement = waterBase * multiplier * soilDryness * (1 - formData.rainfall / 50);
+      let waterRequirement = waterBase * multiplier * soilDryness * (1 - formData.rainfall / 50);
+      let irrigationNeeded = true;
+      let weatherAdjustment: string | null = null;
+      let forecastRain = false;
+      let extremeWeather: "none" | "heatwave" | "cold" = "none";
+      
+      // Weather-based adjustments
+      if (weatherData) {
+        // Check for forecasted rain
+        const rainChance = weatherData.forecast.forecastday[0].day.daily_chance_of_rain;
+        forecastRain = rainChance > 60;
+        
+        if (forecastRain) {
+          waterRequirement = 0;
+          irrigationNeeded = false;
+          weatherAdjustment = `Skipping irrigation: ${rainChance}% chance of rain in the forecast`;
+        }
+        
+        // Check for extreme weather conditions
+        const avgTemp = weatherData.forecast.forecastday[0].day.avgtemp_c;
+        if (avgTemp > 30) {
+          extremeWeather = "heatwave";
+          waterRequirement *= 1.5;
+          weatherAdjustment = weatherAdjustment || "Increasing water due to high temperatures";
+        } else if (avgTemp < 5) {
+          extremeWeather = "cold";
+          waterRequirement *= 0.7;
+          weatherAdjustment = weatherAdjustment || "Reducing water due to cold conditions";
+        }
+      }
+      
       const evaporationRate = (formData.temperature * 0.05 + formData.sunlightHours * 0.1) * (1 - formData.humidity / 100);
       const futureSoilMoisture = Math.max(0, formData.soilMoisture - evaporationRate * 3);
       
@@ -116,18 +256,27 @@ const IrrigationPrediction = () => {
       if (waterRequirement > 2.5) irrigationType = "Sprinkler";
       if (formData.plantType === "Aquatic") irrigationType = "Flood";
       
+      // Final check - if soil moisture will stay above 30%, no need to irrigate
+      if (futureSoilMoisture >= 30 && !extremeWeather) {
+        irrigationNeeded = false;
+        weatherAdjustment = weatherAdjustment || "Soil moisture sufficient for the next few days";
+      }
+      
       setPredictionResult({
         waterRequirement: Number(waterRequirement.toFixed(2)),
         evaporationRate: Number(evaporationRate.toFixed(2)),
         irrigationType,
         futureSoilMoisture: Number(futureSoilMoisture.toFixed(2)),
-        irrigationNeeded: futureSoilMoisture < 30
+        irrigationNeeded,
+        weatherAdjustment,
+        forecastRain,
+        extremeWeather
       });
       
       setIsLoading(false);
       toast({
         title: "Prediction Complete",
-        description: "Your irrigation prediction is ready!"
+        description: "Your weather-adjusted irrigation prediction is ready!"
       });
     }, 1200);
   };
@@ -144,6 +293,49 @@ const IrrigationPrediction = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Weather Location Input */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="location">Location for Weather Data</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    id="location" 
+                    value={formData.location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} 
+                    placeholder="Enter city name"
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={fetchWeatherData} 
+                    disabled={isLoadingWeather}
+                    className="flex-shrink-0"
+                  >
+                    {isLoadingWeather ? "Loading..." : "Get Weather"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Current Weather Display */}
+              {weatherData && (
+                <div className="md:col-span-2 p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center gap-3">
+                  {weatherData.current.condition.text.toLowerCase().includes("rain") ? (
+                    <CloudRain className="h-6 w-6 text-blue-500" />
+                  ) : (
+                    <Cloud className="h-6 w-6 text-blue-500" />
+                  )}
+                  <div>
+                    <p className="font-medium">Current Weather in {weatherData.location.name}</p>
+                    <p className="text-sm text-gray-700">
+                      {weatherData.current.condition.text}, {weatherData.current.temp_c}°C, {weatherData.current.humidity}% humidity
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Forecast: {weatherData.forecast.forecastday[0].day.daily_chance_of_rain}% chance of rain
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="plantType">Plant Type</Label>
                 <Select 
@@ -195,6 +387,7 @@ const IrrigationPrediction = () => {
                 />
               </div>
 
+              {/* Temperature with weather sync indicator */}
               <div className="space-y-2">
                 <Label htmlFor="temperature">Temperature (°C)</Label>
                 <Input 
@@ -205,9 +398,14 @@ const IrrigationPrediction = () => {
                   min="-10" 
                   max="50" 
                   step="0.1"
+                  className={weatherData ? "border-blue-300" : ""}
                 />
+                {weatherData && (
+                  <p className="text-xs text-blue-600">Auto-updated from weather data</p>
+                )}
               </div>
 
+              {/* Humidity with weather sync indicator */}
               <div className="space-y-2">
                 <Label htmlFor="humidity">Humidity (%)</Label>
                 <Input 
@@ -218,7 +416,11 @@ const IrrigationPrediction = () => {
                   min="0" 
                   max="100" 
                   step="0.1"
+                  className={weatherData ? "border-blue-300" : ""}
                 />
+                {weatherData && (
+                  <p className="text-xs text-blue-600">Auto-updated from weather data</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -262,7 +464,7 @@ const IrrigationPrediction = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Calculating..." : "Calculate Irrigation Needs"}
+              {isLoading ? "Calculating..." : "Calculate Weather-Smart Irrigation Needs"}
             </Button>
           </form>
         </CardContent>
@@ -272,14 +474,40 @@ const IrrigationPrediction = () => {
         <div className="space-y-6">
           <Card className="shadow-md">
             <CardHeader>
-              <CardTitle>Prediction Results</CardTitle>
-              <CardDescription>Based on your input data</CardDescription>
+              <CardTitle>Weather-Smart Prediction</CardTitle>
+              <CardDescription>Based on your input and weather data</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4">
+                {/* Weather Adjustment Alert */}
+                {predictionResult.weatherAdjustment && (
+                  <div className={`p-4 rounded-lg border flex items-center gap-3 ${
+                    predictionResult.forecastRain ? 'bg-blue-50 border-blue-100' :
+                    predictionResult.extremeWeather === "heatwave" ? 'bg-orange-50 border-orange-100' :
+                    predictionResult.extremeWeather === "cold" ? 'bg-indigo-50 border-indigo-100' :
+                    'bg-gray-50 border-gray-100'
+                  }`}>
+                    {predictionResult.forecastRain ? (
+                      <Umbrella className="h-5 w-5 text-blue-600" />
+                    ) : predictionResult.extremeWeather === "heatwave" ? (
+                      <Thermometer className="h-5 w-5 text-orange-600" />
+                    ) : predictionResult.extremeWeather === "cold" ? (
+                      <Thermometer className="h-5 w-5 text-indigo-600" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5 text-gray-600" />
+                    )}
+                    <p className="font-medium">
+                      {predictionResult.weatherAdjustment}
+                    </p>
+                  </div>
+                )}
+                
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                   <p className="font-medium">💧 Water Requirement</p>
-                  <p className="text-2xl font-bold text-blue-700">{predictionResult.waterRequirement} liters/day</p>
+                  <p className="text-2xl font-bold text-blue-700">
+                    {predictionResult.waterRequirement} liters/day
+                    {predictionResult.forecastRain && " (Skipped due to rain forecast)"}
+                  </p>
                 </div>
                 
                 <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
