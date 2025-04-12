@@ -31,14 +31,14 @@ const PlantSearchControls = ({
       
       <div>
         <Select
-          value={selectedType || ""}
-          onValueChange={(value) => onTypeChange(value || null)}
+          value={selectedType || "all"}
+          onValueChange={(value) => onTypeChange(value === "all" ? null : value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Filter by plant type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             {PLANT_TYPES.map((type) => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
