@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PlantSearchControlsProps {
   searchTerm: string;
@@ -27,13 +28,14 @@ const PlantSearchControls = ({
   onWaterNeedsChange
 }: PlantSearchControlsProps) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const { translate } = useLanguage();
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
-          placeholder="Search plants..."
+          placeholder={translate("plant.library.search")}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-8"
@@ -46,10 +48,10 @@ const PlantSearchControls = ({
           onValueChange={(value) => onTypeChange(value === "all" ? null : value)}
         >
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Filter by plant type" />
+            <SelectValue placeholder={translate("plant.library.type")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="all">{translate("filters.allTypes")}</SelectItem>
             {PLANT_TYPES.map((type) => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
@@ -65,9 +67,9 @@ const PlantSearchControls = ({
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="space-y-4">
-                <h4 className="font-medium">Additional Filters</h4>
+                <h4 className="font-medium">{translate("filters.additionalFilters")}</h4>
                 <div className="space-y-2">
-                  <Label htmlFor="waterNeeds">Water Needs</Label>
+                  <Label htmlFor="waterNeeds">{translate("plant.library.waterNeeds")}</Label>
                   <Select
                     value={waterNeedsFilter || "all"}
                     onValueChange={(value) => {
@@ -76,15 +78,15 @@ const PlantSearchControls = ({
                     }}
                   >
                     <SelectTrigger id="waterNeeds">
-                      <SelectValue placeholder="All water needs" />
+                      <SelectValue placeholder={translate("filters.allWaterNeeds")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All water needs</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Very Low">Very Low</SelectItem>
-                      <SelectItem value="Very High">Very High</SelectItem>
+                      <SelectItem value="all">{translate("filters.allWaterNeeds")}</SelectItem>
+                      <SelectItem value="Low">{translate("filters.waterNeeds.low")}</SelectItem>
+                      <SelectItem value="Medium">{translate("filters.waterNeeds.medium")}</SelectItem>
+                      <SelectItem value="High">{translate("filters.waterNeeds.high")}</SelectItem>
+                      <SelectItem value="Very Low">{translate("filters.waterNeeds.veryLow")}</SelectItem>
+                      <SelectItem value="Very High">{translate("filters.waterNeeds.veryHigh")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
