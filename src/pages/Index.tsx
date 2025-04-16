@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
@@ -8,9 +7,10 @@ import PlantLibrary from "@/components/PlantLibrary";
 import ChatBot from "@/components/ChatBot";
 import VisualGrowthTracker from "@/components/VisualGrowthTracker";
 import IrrigationDNA from "@/components/IrrigationDNA";
+import PlantCapture from "@/components/PlantCapture";
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<"home" | "prediction" | "library" | "growth" | "dna">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "prediction" | "library" | "growth" | "dna" | "capture">("home");
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-blue-50">
@@ -54,6 +54,15 @@ const Index = () => {
                   className={activeTab === "dna" ? "bg-green-100" : ""}
                 >
                   Irrigation DNA
+                </Button>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Button 
+                  variant="ghost"
+                  onClick={() => setActiveTab("capture")}
+                  className={activeTab === "capture" ? "bg-green-100" : ""}
+                >
+                  Plant Capture
                 </Button>
               </NavigationMenuItem>
               <NavigationMenuItem>
@@ -129,6 +138,22 @@ const Index = () => {
                   View Irrigation DNA
                 </Button>
               </div>
+              
+              <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-green-600 mb-3">Plant Capture &amp; Identify</h3>
+                <p className="text-gray-600 mb-4">
+                  Take a photo of any plant in your garden and get instant identification and care recommendations:
+                </p>
+                <ul className="list-disc list-inside text-gray-600 space-y-1 mb-4">
+                  <li>Instant plant identification</li>
+                  <li>Detailed watering instructions</li>
+                  <li>Custom irrigation plans</li>
+                  <li>Seasonal care advice</li>
+                </ul>
+                <Button onClick={() => setActiveTab("capture")} className="bg-green-600 hover:bg-green-700">
+                  Capture a Plant
+                </Button>
+              </div>
             </div>
             
             <div className="bg-white rounded-lg shadow-md p-6 max-w-3xl mx-auto">
@@ -158,6 +183,8 @@ const Index = () => {
           <VisualGrowthTracker />
         ) : activeTab === "dna" ? (
           <IrrigationDNA />
+        ) : activeTab === "capture" ? (
+          <PlantCapture />
         ) : activeTab === "library" ? (
           <PlantLibrary />
         ) : null}

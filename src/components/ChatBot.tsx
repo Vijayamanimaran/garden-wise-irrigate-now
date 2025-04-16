@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, MessageCircle, Send, Upload, LineChart, Sprout } from "lucide-react";
+import { X, MessageCircle, Send, Upload, LineChart, Sprout, Camera } from "lucide-react";
 
 // Mock Q&A database for the chatbot
 const QA_DATABASE = {
@@ -36,17 +36,25 @@ const QA_DATABASE = {
   
   "can I see growth stats?": "Yes! The Visual Growth Tracker provides growth percentage over time, health score trends, and comparative analysis with typical growth rates for your specific plant type. You'll receive encouraging updates like 'Your Basil grew 20% in 30 days!'",
   
-  "what if my plant isn't growing?": "If your plant shows minimal growth, our system will analyze possible causes based on your inputs about watering, sunlight, and season. We'll provide targeted recommendations to help improve your plant's growth rate."
+  "what if my plant isn't growing?": "If your plant shows minimal growth, our system will analyze possible causes based on your inputs about watering, sunlight, and season. We'll provide targeted recommendations to help improve your plant's growth rate.",
+  
+  "what is plant capture?": "Plant Capture is a feature that lets you take or upload a photo of any plant to get instant identification and detailed irrigation recommendations tailored to that specific plant.",
+  
+  "how to identify a plant?": "To identify a plant, navigate to the Plant Capture tab and either use your camera to take a photo or upload an existing image. Our system will analyze the image and provide identification along with care recommendations.",
+  
+  "plant identification not working?": "For best plant identification results, ensure good lighting, clear focus, and capture a photo that includes distinct features like leaves, flowers, or overall plant structure. Try again with a clearer image if you're having issues.",
+  
+  "are plant care recommendations accurate?": "Our plant care recommendations are based on general best practices for each plant type. For specialized care, consider consulting with a local garden center or extension service for advice specific to your climate and growing conditions."
 };
 
-// Add new growth tracking questions to quick suggestions
+// Add new plant capture questions to quick suggestions
 const QUICK_QUESTIONS = [
   "What's the best irrigation method for roses?",
   "How much water do tomatoes need?",
-  "Is irrigation needed if humidity is high?",
-  "How to reduce evaporation loss?",
   "How to track plant growth?",
-  "Can I see growth stats?"
+  "Can I see growth stats?",
+  "What is plant capture?",
+  "How to identify a plant?"
 ];
 
 interface Message {
@@ -70,7 +78,7 @@ const ChatBot = () => {
     
     // Find answer in database
     const lowerCaseInput = inputMessage.toLowerCase();
-    let botResponse = "I don't have specific information on that. Perhaps try asking about irrigation needs, methods, or plant growth tracking?";
+    let botResponse = "I don't have specific information on that. Perhaps try asking about irrigation needs, methods, plant growth tracking, or plant identification?";
     
     // Check for matching questions in our database
     for (const [question, answer] of Object.entries(QA_DATABASE)) {
@@ -83,21 +91,13 @@ const ChatBot = () => {
       }
     }
     
-    // Add special responses for growth tracking keywords
+    // Add special responses for plant capture keywords
     if (
-      lowerCaseInput.includes("upload photo") || 
-      lowerCaseInput.includes("take picture") ||
-      lowerCaseInput.includes("add image")
+      lowerCaseInput.includes("identify plant") || 
+      lowerCaseInput.includes("plant photo") ||
+      lowerCaseInput.includes("capture plant")
     ) {
-      botResponse = "To upload plant photos for growth tracking, please go to the Growth Tracker tab and use the upload feature there. Our AI will analyze your plant's growth over time as you add more photos.";
-    }
-    
-    if (
-      lowerCaseInput.includes("progress") || 
-      lowerCaseInput.includes("grew") ||
-      lowerCaseInput.includes("growing")
-    ) {
-      botResponse = "The Visual Growth Tracker feature will show your plant's progress over time with visual charts and statistics. You'll receive encouraging updates like 'Your Basil grew 20% in 30 days!'";
+      botResponse = "You can identify plants by taking a photo using our Plant Capture feature. Go to the Plant Capture tab and use your camera or upload a photo. We'll identify the plant and provide tailored irrigation recommendations.";
     }
     
     // Add bot response with a small delay
@@ -187,6 +187,15 @@ const ChatBot = () => {
                 >
                   <Sprout className="h-4 w-4 mb-1" />
                   <span>Metrics</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex flex-col items-center text-xs text-green-700 hover:bg-green-50"
+                  onClick={() => handleQuickQuestion("What is plant capture?")}
+                >
+                  <Camera className="h-4 w-4 mb-1" />
+                  <span>Identify</span>
                 </Button>
               </div>
               
