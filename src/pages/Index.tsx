@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
@@ -8,9 +9,12 @@ import ChatBot from "@/components/ChatBot";
 import VisualGrowthTracker from "@/components/VisualGrowthTracker";
 import IrrigationDNA from "@/components/IrrigationDNA";
 import PlantCapture from "@/components/PlantCapture";
+import LanguageSelector from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<"home" | "prediction" | "library" | "growth" | "dna" | "capture">("home");
+  const { translate } = useLanguage();
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-blue-50">
@@ -18,64 +22,67 @@ const Index = () => {
       <header className="bg-white shadow-sm py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-green-700">Smart Garden Irrigation Advisor</h1>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("home")}
-                  className={activeTab === "home" ? "bg-green-100" : ""}
-                >
-                  Home
-                </Button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("prediction")}
-                  className={activeTab === "prediction" ? "bg-green-100" : ""}
-                >
-                  Irrigation Prediction
-                </Button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("growth")}
-                  className={activeTab === "growth" ? "bg-green-100" : ""}
-                >
-                  Growth Tracker
-                </Button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("dna")}
-                  className={activeTab === "dna" ? "bg-green-100" : ""}
-                >
-                  Irrigation DNA
-                </Button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("capture")}
-                  className={activeTab === "capture" ? "bg-green-100" : ""}
-                >
-                  Plant Capture
-                </Button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Button 
-                  variant="ghost"
-                  onClick={() => setActiveTab("library")}
-                  className={activeTab === "library" ? "bg-green-100" : ""}
-                >
-                  Plant Library
-                </Button>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+          <div className="flex items-center space-x-4">
+            <LanguageSelector />
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("home")}
+                    className={activeTab === "home" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.home")}
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("prediction")}
+                    className={activeTab === "prediction" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.prediction")}
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("growth")}
+                    className={activeTab === "growth" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.growth")}
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("dna")}
+                    className={activeTab === "dna" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.dna")}
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("capture")}
+                    className={activeTab === "capture" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.capture")}
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab("library")}
+                    className={activeTab === "library" ? "bg-green-100" : ""}
+                  >
+                    {translate("nav.library")}
+                  </Button>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
         </div>
       </header>
 

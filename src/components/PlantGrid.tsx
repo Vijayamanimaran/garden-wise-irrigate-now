@@ -1,16 +1,19 @@
 
 import { Plant } from "@/data/plantDatabase";
 import PlantCard from "./PlantCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PlantGridProps {
   plants: Plant[];
 }
 
 const PlantGrid = ({ plants }: PlantGridProps) => {
+  const { translate } = useLanguage();
+  
   if (plants.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        No plants found matching your search criteria.
+        {translate("plant.library.noPlants")}
       </div>
     );
   }

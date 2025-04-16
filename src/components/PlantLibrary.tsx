@@ -5,10 +5,12 @@ import { PLANT_DATABASE } from "@/data/plantDatabase";
 import PlantSearchControls from "./PlantSearchControls";
 import PlantGrid from "./PlantGrid";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ITEMS_PER_PAGE = 12;
 
 const PlantLibrary = () => {
+  const { translate } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [waterNeedsFilter, setWaterNeedsFilter] = useState<string | null>(null);
@@ -37,9 +39,9 @@ const PlantLibrary = () => {
     <div className="space-y-6">
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle>Plant Irrigation Library</CardTitle>
+          <CardTitle>{translate("plant.library.title")}</CardTitle>
           <CardDescription>
-            Browse detailed irrigation information for {PLANT_DATABASE.length}+ garden plants
+            {translate("plant.library.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -53,7 +55,7 @@ const PlantLibrary = () => {
           />
           
           <div className="mb-4 text-sm text-gray-500">
-            Showing {paginatedPlants.length} of {filteredPlants.length} plants
+            {translate("plant.library.showing")} {paginatedPlants.length} {translate("plant.library.of")} {filteredPlants.length} {translate("plant.library.plants")}
           </div>
           
           <PlantGrid plants={paginatedPlants} />
