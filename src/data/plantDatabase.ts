@@ -29,6 +29,10 @@ export interface Plant {
   imageUrl?: string;
   growthRate?: string;
   description?: string;
+  icon?: string;
+  irrigationMethod?: string;
+  idealConditions?: string;
+  seasonality?: string;
 }
 
 export const PLANT_DATABASE: Plant[] = [
@@ -39,7 +43,11 @@ export const PLANT_DATABASE: Plant[] = [
     waterNeeds: "Medium",
     sunlight: "Full Sun",
     imageUrl: "/placeholder.svg",
-    description: "Classic flowering shrub with thorny stems and fragrant blooms"
+    description: "Classic flowering shrub with thorny stems and fragrant blooms",
+    icon: "🌹",
+    irrigationMethod: "Drip irrigation",
+    idealConditions: "Well-drained soil",
+    seasonality: "Spring to Fall"
   },
   {
     id: "2",
@@ -48,7 +56,11 @@ export const PLANT_DATABASE: Plant[] = [
     waterNeeds: "High",
     sunlight: "Full Sun",
     imageUrl: "/placeholder.svg",
-    description: "Popular garden vegetable with juicy, flavorful fruits"
+    description: "Popular garden vegetable with juicy, flavorful fruits",
+    icon: "🍅",
+    irrigationMethod: "Regular watering",
+    idealConditions: "Rich soil, warm",
+    seasonality: "Summer"
   },
   {
     id: "3",
@@ -58,7 +70,11 @@ export const PLANT_DATABASE: Plant[] = [
     sunlight: "Full Sun",
     imageUrl: "/placeholder.svg",
     growthRate: "Fast",
-    description: "Fragrant culinary herb used in many cuisines"
+    description: "Fragrant culinary herb used in many cuisines",
+    icon: "🌿",
+    irrigationMethod: "Consistent moisture",
+    idealConditions: "Warm, fertile soil",
+    seasonality: "Summer"
   },
   {
     id: "4",
@@ -67,7 +83,11 @@ export const PLANT_DATABASE: Plant[] = [
     waterNeeds: "Low",
     sunlight: "Partial Sun",
     imageUrl: "/placeholder.svg",
-    description: "Easy-care indoor plant with stiff, upright leaves"
+    description: "Easy-care indoor plant with stiff, upright leaves",
+    icon: "🪴",
+    irrigationMethod: "Allow to dry out",
+    idealConditions: "Low light tolerant",
+    seasonality: "Year-round"
   },
   {
     id: "5",
@@ -76,7 +96,11 @@ export const PLANT_DATABASE: Plant[] = [
     waterNeeds: "Low",
     sunlight: "Full Sun",
     imageUrl: "/placeholder.svg",
-    description: "Rosette-forming succulent with thick, fleshy leaves"
+    description: "Rosette-forming succulent with thick, fleshy leaves",
+    icon: "🌵",
+    irrigationMethod: "Infrequent, thorough",
+    idealConditions: "Well-draining soil",
+    seasonality: "Year-round"
   },
   {
     id: "6",
@@ -86,6 +110,10 @@ export const PLANT_DATABASE: Plant[] = [
     sunlight: "Full Sun",
     imageUrl: "/placeholder.svg",
     growthRate: "Medium",
-    description: "Sweet, red berries that grow on low-lying plants"
+    description: "Sweet, red berries that grow on low-lying plants",
+    icon: "🍓",
+    irrigationMethod: "Consistent moisture",
+    idealConditions: "Well-drained, acidic",
+    seasonality: "Spring to Summer"
   }
 ];

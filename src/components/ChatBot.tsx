@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, MessageCircle, Send, Upload, LineChart, Plant } from "lucide-react";
+import { X, MessageCircle, Send, Upload, LineChart, Sprout } from "lucide-react";
 
 // Mock Q&A database for the chatbot
 const QA_DATABASE = {
@@ -185,7 +185,7 @@ const ChatBot = () => {
                   className="flex flex-col items-center text-xs text-green-700 hover:bg-green-50"
                   onClick={() => handleQuickQuestion("What metrics does growth tracking measure?")}
                 >
-                  <Plant className="h-4 w-4 mb-1" />
+                  <Sprout className="h-4 w-4 mb-1" />
                   <span>Metrics</span>
                 </Button>
               </div>
